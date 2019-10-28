@@ -1,0 +1,23 @@
+version: '2.1'
+services:
+  db:
+    container_name: trellodb
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'trellodb'
+      MYSQL_USER: 'trello'
+      MYSQL_PASSWORD: 'trello'
+      MYSQL_ROOT_PASSWORD: 'trello'
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    ports:
+      - '3307:3306'
+    expose:
+      - '3306'
+    volumes:
+      - trellodb:/var/lib/mysql
+volumes:
+  trellodb:

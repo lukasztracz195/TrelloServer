@@ -40,6 +40,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         jwtAuthenticationFilter.setAuthenticationFailureHandler(this::authenticationFailureHandler);
 
         http.csrf().disable()
+                .cors().and().headers().frameOptions().sameOrigin()
+                .and()
                 .authorizeRequests()
                 .antMatchers(whiteList.toArray(new String[0])).permitAll()
                 .anyRequest().authenticated()
