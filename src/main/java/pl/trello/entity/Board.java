@@ -31,9 +31,9 @@ public class Board {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long boardId;
 
-    @ManyToOne
-    @JoinColumn(name = "userId", referencedColumnName = "userId")
-    private User owner;
+//    @ManyToOne
+//    @Column(nullable = false)
+//    private User owner;
 
     @OneToMany
     private List<User> members = new ArrayList<>();

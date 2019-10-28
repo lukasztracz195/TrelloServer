@@ -32,7 +32,7 @@ public class TaskList {
     private Long taskListId;
 
     @ManyToOne
-    @JoinColumn(name = "boardId", referencedColumnName = "boardId")
+    @JoinColumn(name = "boardId")
     private Board board;
 
     @OneToMany( mappedBy = "taskList", fetch = FetchType.EAGER)
