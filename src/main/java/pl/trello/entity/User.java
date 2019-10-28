@@ -42,5 +42,4 @@ public class User {
     @OneToMany(mappedBy = "recipient")
     private List<Invitation> receivedInvitations = new ArrayList<>();
 
-    private boolean loggedId;
 }
