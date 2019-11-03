@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import pl.trello.enums.InvitationState;
 
-
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -15,7 +14,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -32,12 +30,12 @@ public class Invitation {
     private Long invitationId;
 
     @ManyToOne
-    @JoinColumn(name = "sender", referencedColumnName = "userId")
-    private User sender;
+    @JoinColumn(name = "sender", referencedColumnName = "memberId")
+    private Member sender;
 
     @ManyToOne
-    @JoinColumn(name = "recipient", referencedColumnName = "userId")
-    private User recipient;
+    @JoinColumn(name = "recipient", referencedColumnName = "memberId")
+    private Member recipient;
 
     @ManyToOne
     @JoinColumn(name = "boardId", referencedColumnName = "boardId")

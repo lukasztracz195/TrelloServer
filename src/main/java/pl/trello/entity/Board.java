@@ -8,7 +8,6 @@ import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -31,12 +30,12 @@ public class Board {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long boardId;
 
-//    @ManyToOne
-//    @Column(nullable = false)
-//    private User owner;
+    @ManyToOne
+    @JoinColumn(name = "memberId")
+    private Member owner;
 
     @OneToMany
-    private List<User> members = new ArrayList<>();
+    private List<Member> members = new ArrayList<>();
 
     @OneToMany
     private List<TaskList> columns = new ArrayList<>();

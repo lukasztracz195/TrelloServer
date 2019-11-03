@@ -15,7 +15,6 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 @AllArgsConstructor
@@ -24,11 +23,11 @@ import java.util.List;
 @Setter
 @Builder
 @Entity
-@Table(name = "users")
-public class User {
+@Table(name = "members")
+public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
+    private Long memberId;
 
     @Column(unique = true, nullable = false)
     private String login;
@@ -42,7 +41,7 @@ public class User {
     @OneToMany(mappedBy = "recipient")
     private List<Invitation> receivedInvitations = new ArrayList<>();
 
-//    @OneToMany(mappedBy = "owner")
-//    private List<Board> users = new ArrayList<>();
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner")
+    private List<Board> users = new ArrayList<>();
 
 }

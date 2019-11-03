@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -15,7 +16,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Column;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,13 +29,14 @@ import java.util.List;
 public class TaskList {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "taksListId")
     private Long taskListId;
 
     @ManyToOne
     @JoinColumn(name = "boardId")
     private Board board;
 
-    @OneToMany( mappedBy = "taskList", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "taskId", fetch = FetchType.EAGER)
     private List<Task> tasks = new ArrayList<>();
 
     @Column(nullable = false)

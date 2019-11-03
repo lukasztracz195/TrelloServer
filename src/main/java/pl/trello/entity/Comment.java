@@ -34,8 +34,8 @@ public class Comment {
     private Task task;
 
     @ManyToOne
-    @JoinColumn(name = "userId", referencedColumnName = "userId")
-    private User owner;
+    @JoinColumn(name = "memberId", referencedColumnName = "memberId")
+    private Member owner;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

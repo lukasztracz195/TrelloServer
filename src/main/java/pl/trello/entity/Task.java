@@ -13,8 +13,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @AllArgsConstructor
@@ -29,7 +27,7 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long taskId;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "taskListId")
     private TaskList taskList;
 
@@ -37,6 +35,6 @@ public class Task {
     private String description;
 
     @ManyToOne
-    @JoinColumn(name = "userId")
-    private User reporter;
+    @JoinColumn(name = "memberId")
+    private Member reporter;
 }
