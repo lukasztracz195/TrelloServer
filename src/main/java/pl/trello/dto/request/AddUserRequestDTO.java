@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class AddUserRequest implements Request {
+public class AddUserRequestDTO implements Request {
 
     private String login;
 
