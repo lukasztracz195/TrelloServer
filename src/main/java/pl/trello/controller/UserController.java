@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import pl.trello.dto.request.AddUserRequest;
+import pl.trello.dto.request.AddUserRequestDTO;
 import pl.trello.service.UserService;
 
 import static pl.trello.controller.UserController.USER_PATH;
@@ -30,7 +30,7 @@ public class UserController {
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE
     )
-    public ResponseEntity register(@RequestBody AddUserRequest request) {
+    public ResponseEntity register(@RequestBody AddUserRequestDTO request) {
         return userService.register(request);
     }
 

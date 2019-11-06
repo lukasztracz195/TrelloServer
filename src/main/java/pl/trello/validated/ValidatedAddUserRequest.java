@@ -1,21 +1,21 @@
 package pl.trello.validated;
 
 import org.springframework.http.ResponseEntity;
-import pl.trello.dto.request.AddUserRequest;
+import pl.trello.dto.request.AddUserRequestDTO;
 
 public class ValidatedAddUserRequest extends ValidatedRequest {
 
-    private final AddUserRequest addUserRequest;
-    protected ValidatedAddUserRequest(ResponseEntity responseEntity, boolean valid, AddUserRequest addUserRequest) {
+    private final AddUserRequestDTO addUserRequestDTO;
+    protected ValidatedAddUserRequest(ResponseEntity responseEntity, boolean valid, AddUserRequestDTO addUserRequestDTO) {
         super(responseEntity, valid);
-        this.addUserRequest = addUserRequest;
+        this.addUserRequestDTO = addUserRequestDTO;
     }
 
     public static ValidatedAddUserRequest invalid(ResponseEntity responseEntity) {
         return new ValidatedAddUserRequest(responseEntity, false, null);
     }
 
-    public static ValidatedAddUserRequest valid(AddUserRequest deliveryPoint) {
+    public static ValidatedAddUserRequest valid(AddUserRequestDTO deliveryPoint) {
         return new ValidatedAddUserRequest(null, true, deliveryPoint);
     }
 }
