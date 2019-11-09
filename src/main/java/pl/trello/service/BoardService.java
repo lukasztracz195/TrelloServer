@@ -37,7 +37,7 @@ public class BoardService {
 
         return ResponseEntity.ok(AddBoardResponseDTO.builder()
                 .boardId(board.getBoardId())
-                .owner(board.getOwner())
+                .ownerId(board.getOwner().getMemberId())
                 .name(board.getName())
                 .build());
     }
@@ -51,7 +51,7 @@ public class BoardService {
 
         return ResponseEntity.ok(ChangeBoardNameResponseDTO.builder()
                 .boardId(board.getBoardId())
-                .owner(board.getOwner())
+                .ownerId(board.getOwner().getMemberId())
                 .members(board.getMembers())
                 .columns(board.getColumns())
                 .name(board.getName())

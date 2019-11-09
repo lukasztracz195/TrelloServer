@@ -19,6 +19,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collections;
 
 import static pl.trello.security.SecurityConstants.TOKEN_HEADER;
 import static pl.trello.security.SecurityConstants.TOKEN_PREFIX;
@@ -55,9 +56,8 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
                         .getBody()
                         .getSubject();
 
-
                 if (!StringUtils.isEmpty(username)) {
-                    return new UsernamePasswordAuthenticationToken(username, null);
+                    return new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
                 }
             } catch (ExpiredJwtException exception) {
                 log.warn("Request to parse expired JWT : {} failed : {}", token, exception.getMessage());
