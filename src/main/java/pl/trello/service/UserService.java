@@ -6,7 +6,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import pl.trello.dto.request.AddUserRequest;
+import pl.trello.dto.request.AddUserRequestDTO;
 import pl.trello.entity.Member;
 import pl.trello.repository.UserRepository;
 import pl.trello.validators.AddUserRequestValidator;
@@ -29,7 +29,7 @@ public class UserService implements UserDetailsService {
         this.addUserValidator = addUserValidator;
     }
 
-    public ResponseEntity register(AddUserRequest request) {
+    public ResponseEntity register(AddUserRequestDTO request) {
         ValidatedRequest validate = addUserValidator.validate(request);
 
         if(validate.isValid()) {
