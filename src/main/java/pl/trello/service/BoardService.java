@@ -1,15 +1,20 @@
 package pl.trello.service;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import pl.trello.dto.response.AddBoardResponseDTO;
 import pl.trello.dto.response.ChangeBoardNameResponseDTO;
+import pl.trello.dto.response.GetBoardsResponseDTO;
 import pl.trello.entity.Board;
 import pl.trello.entity.Member;
 import pl.trello.repository.BoardRepository;
 import pl.trello.repository.UserRepository;
 import pl.trello.request.AddBoardRequest;
 import pl.trello.request.ChangeBoardNameRequest;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BoardService {
@@ -27,7 +32,7 @@ public class BoardService {
     public ResponseEntity addBoard(AddBoardRequest addBoardRequest) {
         //TODO validate
 
-        Member owner = userRepository.findByLogin(addBoardRequest.getLogin()).get();
+        Member owner = userRepository.findByUsername(addBoardRequest.getLogin()).get();
         Board board = Board.builder()
                 .owner(owner)
                 .name(addBoardRequest.getBoardName())
@@ -53,8 +58,9 @@ public class BoardService {
                 .boardId(board.getBoardId())
                 .ownerId(board.getOwner().getMemberId())
                 .members(board.getMembers())
-                .columns(board.getColumns())
+                .columns(board.getTaskLists())
                 .name(board.getName())
                 .build());
     }
+
 }

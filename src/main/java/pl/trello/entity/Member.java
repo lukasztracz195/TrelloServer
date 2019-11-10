@@ -30,16 +30,10 @@ public class Member {
     private Long memberId;
 
     @Column(unique = true, nullable = false)
-    private String login;
+    private String username;
 
     @Column( nullable = false)
     private String password;
-
-    @OneToMany(mappedBy = "sender")
-    private List<Invitation> sentInvitations = new ArrayList<>();
-
-    @OneToMany(mappedBy = "recipient")
-    private List<Invitation> receivedInvitations = new ArrayList<>();
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner")
     private List<Board> users = new ArrayList<>();

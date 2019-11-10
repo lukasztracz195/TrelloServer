@@ -35,7 +35,7 @@ public class UserService implements UserDetailsService {
         if(validate.isValid()) {
             String encodedPassword = passwordEncoder.encode(request.getPassword());
             Member member = Member.builder()
-                    .login(request.getLogin())
+                    .username(request.getLogin())
                     .password(encodedPassword)
                     .build();
             userRepository.save(member);
@@ -47,8 +47,8 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByLogin(username)
-                .map(user -> new org.springframework.security.core.userdetails.User(user.getLogin(), user.getPassword(), Collections.emptyList()))
+        return userRepository.findByUsername(username)
+                .map(user -> new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), Collections.emptyList()))
                 .orElseThrow(() -> new UsernameNotFoundException("Not found username=" + username));
     }
 }

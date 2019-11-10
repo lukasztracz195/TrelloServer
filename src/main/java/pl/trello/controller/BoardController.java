@@ -2,6 +2,7 @@ package pl.trello.controller;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.trello.dto.request.AddBoardRequestDTO;
 import pl.trello.dto.request.ChangeBoardNameRequestDTO;
+import pl.trello.dto.request.GetBoardRequestDTO;
 import pl.trello.request.AddBoardRequest;
 import pl.trello.request.ChangeBoardNameRequest;
 import pl.trello.service.BoardService;
@@ -29,6 +31,7 @@ public class BoardController {
     static final String BOARD_ID_VARIABLE = "{" + BOARD_ID + "}";
     private static final String ADD_PATH = EMPTY;
     private static final String CHANGE_BOARD_NAME_PATH = "/changeName/" + BOARD_ID_VARIABLE;
+    private static final String GET_BOARDS = "/get";
 
     private final BoardService boardService;
 
