@@ -21,7 +21,7 @@ public class AddUserRequestValidator implements RequestValidator<AddUserRequestD
             return ValidatedRequest.invalid(ResponseAdapter.badRequest("Username or password is blank"));
         }
 
-        return userRepository.findByLogin(request.getLogin())
+        return userRepository.findByUsername(request.getLogin())
                 .map(user -> ValidatedRequest.invalid(ResponseAdapter.badRequest("User is taken")))
                 .orElseGet(ValidatedRequest::valid);
     }

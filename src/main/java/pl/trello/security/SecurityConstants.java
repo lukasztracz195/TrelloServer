@@ -10,6 +10,7 @@ final class SecurityConstants {
     static final String TOKEN_ISSUER = "trello-secure";
     static final String TOKEN_AUDIENCE = "trelloapp";
     static final String TYPE = "type";
+    static final String ROLES_CLAIMS = "roles";
 
     private SecurityConstants() {
         throw new IllegalStateException("Cannot create instance of static util class");

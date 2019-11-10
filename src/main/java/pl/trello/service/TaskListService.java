@@ -39,7 +39,7 @@ public class TaskListService {
                 .build();
 
         taskList = taskListRepository.save(taskList);
-        board.getColumns().add(taskList);
+        board.getTaskLists().add(taskList);
         boardRepository.save(board);
 
         return ResponseEntity.ok(AddTaskListResponseDTO.builder()
@@ -51,7 +51,7 @@ public class TaskListService {
     }
 
     private int getFreePosition(Board board) {
-        return board.getColumns().stream()
+        return board.getTaskLists().stream()
                 .mapToInt(TaskList::getPosition)
                 .max()
                 .orElse(-1) + 1;

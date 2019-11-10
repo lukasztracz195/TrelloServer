@@ -38,7 +38,7 @@ public class Board {
     private List<Member> members = new ArrayList<>();
 
     @OneToMany
-    private List<TaskList> columns = new ArrayList<>();
+    private List<TaskList> taskLists = new ArrayList<>();
 
     @Column(nullable = false)
     private String name;
