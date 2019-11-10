@@ -2,8 +2,8 @@ package pl.trello.service;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import pl.trello.dto.response.AddTaskListResponseDTO;
-import pl.trello.dto.response.ChangeColumnsPositionsResponseDto;
+import pl.trello.dto.response.valid.AddTaskListResponseDTO;
+import pl.trello.dto.response.valid.ChangeColumnsPositionsResponseDto;
 import pl.trello.entity.Board;
 import pl.trello.entity.TaskList;
 import pl.trello.repository.BoardRepository;

@@ -11,5 +11,5 @@ public class ChangeBoardNameRequest {
 
     private String boardName;
 
-    private String login;
+    private String username;
 }

@@ -1,4 +1,4 @@
-package pl.trello.dto.response;
+package pl.trello.dto.response.valid;
 
 import lombok.Builder;
 import lombok.Getter;

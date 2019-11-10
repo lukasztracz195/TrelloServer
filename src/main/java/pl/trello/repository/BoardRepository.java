@@ -7,8 +7,12 @@ import pl.trello.entity.Board;
 import pl.trello.entity.Member;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
+
 
 public interface BoardRepository extends JpaRepository<Board, Long> {
+
+    @Query("FROM Board b WHERE b.owner.memberId = :ownerId")
+    List<Board> findListByOwner(@Param("ownerId") long ownerId);
 
 }
