@@ -1,4 +1,4 @@
-package pl.trello.dto.response;
+package pl.trello.dto.response.valid;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -10,5 +10,5 @@ import java.util.List;
 @Builder
 public class GetBoardsResponseDTO {
 
-    List<Board> boards;
+    List<BoardResponseDTO> boards;
 }
