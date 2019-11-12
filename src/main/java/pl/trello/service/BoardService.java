@@ -1,6 +1,5 @@
 package pl.trello.service;
 
-import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.trello.dto.request.GetBoardRequestDTO;
@@ -18,7 +17,6 @@ import pl.trello.request.ChangeBoardNameRequest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -80,8 +78,8 @@ public class BoardService {
         return ResponseEntity.of(InvalidResponse.of("User with username: " + changeBoardNameRequest.getUsername() + " not exist"));
     }
 
-    public ResponseEntity getBoards(GetBoardRequestDTO getBoardRequestDTO) {
-        Optional<Member> optionalMember = userRepository.findByUsername(getBoardRequestDTO.getUsername());
+    public ResponseEntity getBoards(String username) {
+        Optional<Member> optionalMember = userRepository.findByUsername(username);
         if (optionalMember.isPresent()) {
             Member member = optionalMember.get();
             List<Board> boards = findAllConnectedByMemberId(member.getMemberId());
@@ -92,9 +90,9 @@ public class BoardService {
                         .owner(board.getOwner().getUsername())
                         .membersNames(board.getMembers().stream()
                                 .map(f -> member.getUsername())
-                                .map(m ->m.toString())
+                                .map(m -> m)
                                 .collect(Collectors.toList()))
-                                .taskLists(board.getTaskLists())
+                        .taskLists(board.getTaskLists())
                         .build());
             }
 
@@ -102,22 +100,30 @@ public class BoardService {
                     .boards(boardResponseDTOS)
                     .build());
         }
+        return ResponseEntity.of(InvalidResponse.of("User with username: " + username + " not exist"));
+    }
+
+    public ResponseEntity getBoard(GetBoardRequestDTO getBoardRequestDTO, Long boardId) {
+        Optional<Member> optionalMember = userRepository.findByUsername(getBoardRequestDTO.getUsername());
+        if (optionalMember.isPresent()) {
+            Member member = optionalMember.get();
+            List<Board> boards = findAllConnectedByMemberId(member.getMemberId());
+            if (boards.stream().anyMatch(f -> f.getBoardId().equals(boardId))) {
+                Board board = boardRepository.findById(boardId).get();
+                return ResponseEntity.ok(BoardResponseDTO.builder()
+                        .name(board.getName())
+                        .owner(board.getOwner().getUsername())
+                        .membersNames(board.getMembers().stream()
+                                .map(Member::getUsername)
+                                .collect(Collectors.toList()))
+                        .taskLists(board.getTaskLists())
+                        .build());
+            }
+            return ResponseEntity.of(InvalidResponse.of("User have not privillages to this board"));
+        }
         return ResponseEntity.of(InvalidResponse.of("User with username: " + getBoardRequestDTO.getUsername() + " not exist"));
     }
 
-
-    public ResponseEntity deleteBoard(long boardId){
-        Optional<Board> optionalBoard = boardRepository.findById(boardId);
-                if(optionalBoard.isPresent()){
-                    Board board = optionalBoard.get();
-                    if(board.getMembers().stream().anyMatch(Objects::isNull)){
-                        boardRepository.delete(board);
-                        return  ResponseEntity.ok(HttpEntity.EMPTY);
-                    }
-                    return ResponseEntity.of(InvalidResponse.of("Can not delete board with members"));
-                }
-        return ResponseEntity.of(InvalidResponse.of("Board with id: "+boardId+" not exist"));
-    }
     private List<Board> findAllConnectedByMemberId(long memberId) {
         Member member = userRepository.getOne(memberId);
         List<Board> boardsWhichMemberIsOwner = boardRepository.findListByOwner(member.getMemberId());
