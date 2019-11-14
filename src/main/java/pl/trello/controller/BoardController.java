@@ -30,7 +30,8 @@ public class BoardController {
     static final String BOARD_ID_VARIABLE = "{" + BOARD_ID + "}";
     private static final String ADD_PATH = EMPTY;
     private static final String CHANGE_BOARD_NAME_PATH = "/changeName/" + BOARD_ID_VARIABLE;
-    private static final String GET_BOARDS = "/get";
+    private static final String GET_BOARDS = "/getBoards";
+    private static final String GET_BOARD = "/getBoard";
 
     private final BoardService boardService;
 
@@ -76,7 +77,7 @@ public class BoardController {
     }
 
     @GetMapping(
-            value = GET_BOARDS,
+            value = GET_BOARD,
             consumes = APPLICATION_JSON_UTF8_VALUE,
             produces = APPLICATION_JSON_UTF8_VALUE
     )

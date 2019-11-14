@@ -21,9 +21,9 @@ import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Getter
 @Setter
-@Builder
 @Entity
 @Table(name = "tasklists")
 public class TaskList {
