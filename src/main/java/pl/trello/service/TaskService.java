@@ -114,11 +114,11 @@ public class TaskService {
         return ResponseAdapter.notFound("Task with id: " + moveTaskRequestDTO.getTaskId() + " not exist");
     }
 
-    private boolean isOwner(Board board, Member member) {
+    public static boolean isOwner(Board board, Member member) {
         return board.getOwner().equals(member);
     }
 
-    private boolean isMemberOfBoard(Board board, Member member) {
+    public static boolean isMemberOfBoard(Board board, Member member) {
         return board.getMembers().stream()
                 .anyMatch(m -> m.getUsername().equals(member.getUsername()));
     }
