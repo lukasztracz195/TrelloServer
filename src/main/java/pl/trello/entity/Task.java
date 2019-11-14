@@ -44,6 +44,5 @@ public class Task {
     private Member reporter;
 
     @ManyToOne
-    @JoinColumn(name = "memberId")
     private Member contractor;
 }
