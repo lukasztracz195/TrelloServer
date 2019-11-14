@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 import static pl.trello.controller.BoardController.BOARD_ID;
+import static pl.trello.controller.BoardController.BOARD_ID_VARIABLE;
 import static pl.trello.controller.TaskListController.TASK_LIST_PATH;
 
 @RestController
@@ -33,7 +34,7 @@ public class TaskListController {
     private static final String TASK_LIST_ID = "taskListId";
     private static final String TASK_LIST_ID_VARIABLE = "{" + TASK_LIST_ID + "}";
     private static final String EMPTY = "";
-    private static final String ADD_TASK_LIST_PATH = "/" + EMPTY;
+    private static final String ADD_TASK_LIST_PATH = "/" + BOARD_ID_VARIABLE;
     private static final String CHANGE_TASK_LIST_POSITIONS_PATH = "/" + TASK_LIST_ID_VARIABLE + "/changePositions";
     private static final String CHANGE_TASK_LIST_NAME = "/" + TASK_LIST_ID_VARIABLE + "/" + TASK_LIST_ID_VARIABLE + "rename";
     private static final String GET_TASK_LIST = "/get/" + TASK_LIST_ID_VARIABLE;
