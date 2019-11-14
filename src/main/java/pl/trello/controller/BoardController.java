@@ -1,6 +1,7 @@
 package pl.trello.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,6 +33,7 @@ public class BoardController {
     private static final String CHANGE_BOARD_NAME_PATH = "/changeName/" + BOARD_ID_VARIABLE;
     private static final String GET_BOARDS = "/getBoards";
     private static final String GET_BOARD = "/getBoard";
+    private static final String DELETE_BOARD = "/delete";
 
     private final BoardService boardService;
 
@@ -84,5 +86,13 @@ public class BoardController {
     public ResponseEntity getBoard(@PathVariable(BOARD_ID) Long boardId,
                                    @RequestBody GetBoardRequestDTO getBoardRequestDTO) {
         return boardService.getBoard(getBoardRequestDTO, boardId);
+    }
+    @DeleteMapping(
+            value = DELETE_BOARD,
+            consumes = APPLICATION_JSON_UTF8_VALUE,
+            produces = APPLICATION_JSON_UTF8_VALUE
+    )
+    public ResponseEntity deleateBoard(@PathVariable(BOARD_ID) Long boardId){
+        return boardService.deleteBoard(boardId);
     }
 }

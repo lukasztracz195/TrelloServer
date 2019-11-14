@@ -21,6 +21,11 @@ import java.security.Principal;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static pl.trello.controller.TaskController.TASKS_PATH;
 
 @RestController

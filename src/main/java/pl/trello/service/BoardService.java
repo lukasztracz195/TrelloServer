@@ -1,5 +1,6 @@
 package pl.trello.service;
 
+import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.trello.dto.request.GetBoardRequestDTO;
@@ -17,6 +18,7 @@ import pl.trello.request.ChangeBoardNameRequest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -78,8 +80,9 @@ public class BoardService {
         return ResponseEntity.of(InvalidResponse.of("User with username: " + changeBoardNameRequest.getUsername() + " not exist"));
     }
 
+
     public ResponseEntity getBoards(String username) {
-        Optional<Member> optionalMember = userRepository.findByUsername(username);
+        Optional<Member> optionalMember = userRepository.findByUsername(getBoardRequestDTO.getUsername());
         if (optionalMember.isPresent()) {
             Member member = optionalMember.get();
             List<Board> boards = findAllConnectedByMemberId(member.getMemberId());
@@ -95,7 +98,6 @@ public class BoardService {
                         .taskLists(board.getTaskLists())
                         .build());
             }
-
             return ResponseEntity.ok(GetBoardsResponseDTO.builder()
                     .boards(boardResponseDTOS)
                     .build());
@@ -123,6 +125,7 @@ public class BoardService {
         }
         return ResponseEntity.of(InvalidResponse.of("User with username: " + getBoardRequestDTO.getUsername() + " not exist"));
     }
+
 
     private List<Board> findAllConnectedByMemberId(long memberId) {
         Member member = userRepository.getOne(memberId);
