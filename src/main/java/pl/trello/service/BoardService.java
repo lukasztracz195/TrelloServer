@@ -5,11 +5,13 @@ import org.springframework.stereotype.Service;
 import pl.trello.dto.request.GetBoardRequestDTO;
 import pl.trello.dto.response.invalid.InvalidResponse;
 import pl.trello.dto.response.valid.AddBoardResponseDTO;
+import pl.trello.dto.response.valid.AddTaskListResponseDTO;
 import pl.trello.dto.response.valid.BoardResponseDTO;
 import pl.trello.dto.response.valid.ChangeBoardNameResponseDTO;
 import pl.trello.dto.response.valid.GetBoardsResponseDTO;
 import pl.trello.entity.Board;
 import pl.trello.entity.Member;
+import pl.trello.entity.TaskList;
 import pl.trello.repository.BoardRepository;
 import pl.trello.repository.UserRepository;
 import pl.trello.request.AddBoardRequest;
@@ -92,7 +94,7 @@ public class BoardService {
                                 .map(f -> member.getUsername())
                                 .map(m -> m)
                                 .collect(Collectors.toList()))
-                        .taskLists(board.getTaskLists())
+                        .taskLists(prepareTaskListResponse(board))
                         .build());
             }
 
@@ -112,11 +114,12 @@ public class BoardService {
                 Board board = boardRepository.findById(boardId).get();
                 return ResponseEntity.ok(BoardResponseDTO.builder()
                         .name(board.getName())
+                        .boardId(board.getBoardId())
                         .owner(board.getOwner().getUsername())
                         .membersNames(board.getMembers().stream()
                                 .map(Member::getUsername)
                                 .collect(Collectors.toList()))
-                        .taskLists(board.getTaskLists())
+                        .taskLists(prepareTaskListResponse(board))
                         .build());
             }
             return ResponseEntity.of(InvalidResponse.of("User have not privillages to this board"));
@@ -139,5 +142,18 @@ public class BoardService {
             boardsWhichMemberIsOwner.remove(boardsWhichMemberIsOwner.size() - 1);
         }
         return boardsWhichMemberIsMember;
+    }
+
+    private List<AddTaskListResponseDTO> prepareTaskListResponse(Board board) {
+        List<AddTaskListResponseDTO> taskLists = new ArrayList<>();
+        for (TaskList taskList : board.getTaskLists()) {
+            taskLists.add(AddTaskListResponseDTO.builder()
+                    .name(taskList.getName())
+                    .boardId(taskList.getBoard().getBoardId())
+                    .position(taskList.getPosition())
+                    .taskListId(taskList.getTaskListId())
+                    .build());
+        }
+        return taskLists;
     }
 }

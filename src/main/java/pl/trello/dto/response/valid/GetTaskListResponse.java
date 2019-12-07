@@ -7,7 +7,7 @@ import java.util.List;
 
 @Getter
 @Builder
-public class GetTaskLIstResponse {
+public class GetTaskListResponse {
 
     private String name;
 

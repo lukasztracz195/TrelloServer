@@ -12,7 +12,8 @@ public class BoardResponseDTO {
 
     private String name;
     private String owner;
+    private Long boardId;
     private List<String> membersNames;
-    private List<TaskList> taskLists;
+    private List<AddTaskListResponseDTO> taskLists;
 
 }
