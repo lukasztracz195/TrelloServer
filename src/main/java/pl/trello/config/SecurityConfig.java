@@ -24,7 +24,8 @@ import java.util.List;
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private final List<String> whiteList = List.of("/user/register");
+    private final List<String> whiteList = List.of("/user/register", "/swagger-ui.html", "/webjars/**", "/v2/**",
+            "/swagger-resources/**");
     private final UserService userService;
     private final SecurityProperties securityProperties;
 

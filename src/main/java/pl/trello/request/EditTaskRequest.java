@@ -6,5 +6,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class EditTaskRequest {
-    String description;
+    private Long taskId;
+    private String description;
 }

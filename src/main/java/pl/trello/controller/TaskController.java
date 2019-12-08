@@ -27,14 +27,18 @@ import static pl.trello.controller.TaskController.TASKS_PATH;
 @RequestMapping(TASKS_PATH)
 public class TaskController {
     static final String TASKS_PATH = "/tasks";
-    private static final String ADD_PATH = EMPTY;
+
     private static final String TASK_LIST_ID = "taskListId";
-    private static final String TASK_LIST_ID_VARIABLE = "{" + TASK_LIST_ID + "}";
     private static final String TASK_ID = "taskId";
+
+    private static final String TASK_LIST_ID_VARIABLE = "{" + TASK_LIST_ID + "}";
     private static final String TASK_ID_VARIABLE = "{" + TASK_ID + "}";
-    private static final String EDIT_TASK_PATH = "/edit/" + TASK_ID_VARIABLE;
-    private static final String ASSIGN_TASK = "/assign/" + TASK_ID_VARIABLE;
-    private static final String MOVE_TASK = "/move/";
+
+    private static final String ADD = "/add";
+    private static final String EDIT_TASK_PATH = "/edit";
+    private static final String ASSIGN_TASK = "/assign";
+    private static final String MOVE_TASK = "/move";
+    private static final String GET_TASK = "/get/"+TASK_ID_VARIABLE;
 
     private final TaskService taskService;
 
@@ -42,17 +46,17 @@ public class TaskController {
         this.taskService = taskService;
     }
 
-    @GetMapping(
-            value = EMPTY,
+    @PostMapping(
+            value = ADD,
             consumes = APPLICATION_JSON_UTF8_VALUE,
             produces = APPLICATION_JSON_UTF8_VALUE
     )
-    public ResponseEntity addTask(@PathVariable(TASK_LIST_ID) Long taskListId,
-                                  @RequestBody AddTaskRequestDTO addTaskRequestDTO, Principal principal) {
+    public ResponseEntity addTask(@RequestBody AddTaskRequestDTO addTaskRequestDTO,
+                                  Principal principal) {
         return taskService.addTask(AddTaskRequest.builder()
                 .username(principal.getName())
                 .description(addTaskRequestDTO.getDescription())
-                .taskListId(taskListId)
+                .taskListId(addTaskRequestDTO.getTaskListId())
                 .build());
     }
 
@@ -61,9 +65,10 @@ public class TaskController {
             consumes = APPLICATION_JSON_UTF8_VALUE,
             produces = APPLICATION_JSON_UTF8_VALUE
     )
-    public ResponseEntity editTask(@PathVariable(TASK_ID) Long taskId, @RequestBody EditTaskRequest editTaskRequest, Principal principal) {
+    public ResponseEntity editTask(@RequestBody EditTaskRequest editTaskRequest,
+            Principal principal) {
         return taskService.editTask(EditTaskRequestDTO.builder()
-                .taskId(taskId)
+                .taskId(editTaskRequest.getTaskId())
                 .username(principal.getName())
                 .description(editTaskRequest.getDescription())
                 .build());
@@ -74,10 +79,10 @@ public class TaskController {
             consumes = APPLICATION_JSON_UTF8_VALUE,
             produces = APPLICATION_JSON_UTF8_VALUE
     )
-    public ResponseEntity assignTask(@PathVariable(TASK_ID) Long taskId, @RequestBody AssignTaskRequest assignTaskRequest, Principal principal) {
+    public ResponseEntity assignTask(@RequestBody AssignTaskRequest assignTaskRequest, Principal principal) {
         return taskService.assignTask(AssignTaskRequestDTO.builder()
-                .taskId(taskId)
-                .assignedUsername(assignTaskRequest.getUsername())
+                .taskId(assignTaskRequest.getTaskId())
+                .assignedUserId(assignTaskRequest.getUserId())
                 .principalUsername(principal.getName())
                 .build());
     }
@@ -93,5 +98,14 @@ public class TaskController {
                 .taskListId(moveTaskRequest.getTaskListId())
                 .username(principal.getName())
                 .build());
+    }
+
+    @GetMapping(
+            value = GET_TASK,
+            consumes = APPLICATION_JSON_UTF8_VALUE,
+            produces = APPLICATION_JSON_UTF8_VALUE
+    )
+    public ResponseEntity getTask(@PathVariable(TASK_ID) Long taskId){
+        return taskService.getTask(taskId);
     }
 }

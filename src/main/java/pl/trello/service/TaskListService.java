@@ -4,10 +4,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.trello.ResponseAdapter;
 import pl.trello.dto.request.ChangeTaskListNameDTO;
+import pl.trello.dto.request.GetTaskListByBoardDTO;
 import pl.trello.dto.request.GetTaskListDTO;
 import pl.trello.dto.response.valid.AddTaskListResponseDTO;
 import pl.trello.dto.response.valid.ChangeColumnsPositionsResponseDto;
-import pl.trello.dto.response.valid.GetTaskLIstResponse;
+import pl.trello.dto.response.valid.GetTaskListResponse;
+import pl.trello.dto.response.valid.GetTaskListsResponseDTO;
 import pl.trello.entity.Board;
 import pl.trello.entity.Member;
 import pl.trello.entity.Task;
@@ -18,6 +20,7 @@ import pl.trello.repository.UserRepository;
 import pl.trello.request.AddTaskListRequest;
 import pl.trello.request.ChangeColumnsPositionsRequest;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.LongSummaryStatistics;
@@ -131,7 +134,7 @@ public class TaskListService {
             if (optionalMember.isPresent()) {
                 Member member = optionalMember.get();
                 if (board.getOwner().equals(member) || board.getMembers().stream().anyMatch(f -> f.equals(member))) {
-                    return ResponseAdapter.ok(GetTaskLIstResponse.builder()
+                    return ResponseAdapter.ok(GetTaskListResponse.builder()
                             .name(taskList.getName())
                             .boardId(board.getBoardId())
                             .taskListId(taskList.getTaskListId())
@@ -144,5 +147,39 @@ public class TaskListService {
             return ResponseAdapter.notFound("User with name: " + getTaskListDTO.getUsername() + " not exist");
         }
         return ResponseAdapter.notFound("TaskList with id: " + getTaskListDTO.getTaskListId() + " not exist");
+    }
+
+
+    public ResponseEntity getTaskListByBoard(GetTaskListByBoardDTO getTaskListByBoardDTO) {
+        Optional<Board> optionalBoard = boardRepository.findById(getTaskListByBoardDTO.getBoardId());
+        if (optionalBoard.isPresent()) {
+            Board board = optionalBoard.get();
+            Optional<Member> optionalMember = userRepository.findByUsername(getTaskListByBoardDTO.getUsername());
+            if (optionalMember.isPresent()) {
+                Member member = optionalMember.get();
+                if (board.getOwner().equals(member) || board.getMembers().stream().anyMatch(f -> f.equals(member))) {
+                    return ResponseAdapter.ok(GetTaskListsResponseDTO.builder()
+                            .taskLists(prepareTaskLists(board.getTaskLists()))
+                            .build());
+                }
+                return ResponseAdapter.forbidden("User have not privileges to this board");
+            }
+            return ResponseAdapter.notFound("User with name: " + getTaskListByBoardDTO.getUsername() + " not exist");
+        }
+        return ResponseAdapter.notFound("Board with id: " + getTaskListByBoardDTO.getBoardId() + " not exist");
+    }
+
+    private List<GetTaskListResponse> prepareTaskLists(List<TaskList> taskList) {
+        List<GetTaskListResponse> list = new ArrayList<>();
+        for(TaskList item : taskList){
+            list.add(GetTaskListResponse.builder()
+                    .boardId(item.getBoard().getBoardId())
+                    .name(item.getName())
+                    .tasks(item.getTasks().stream().map(f -> f.getTaskId()).collect(Collectors.toList()))
+                    .position(item.getPosition())
+                    .taskListId(item.getTaskListId())
+                    .build());
+        }
+        return list;
     }
 }

@@ -9,5 +9,6 @@ import java.time.LocalDateTime;
 @Builder
 public class AddCommentRequest {
 
+    private Long taskId;
     private String content;
 }

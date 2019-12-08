@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import pl.trello.dto.request.AddTaskListRequestDTO;
 import pl.trello.dto.request.ChangeColumnsPositionsRequestDto;
 import pl.trello.dto.request.ChangeTaskListNameDTO;
+import pl.trello.dto.request.GetTaskListByBoardDTO;
 import pl.trello.dto.request.GetTaskListDTO;
 import pl.trello.request.AddTaskListRequest;
 import pl.trello.request.ChangeColumnsPositionsRequest;
@@ -36,8 +37,9 @@ public class TaskListController {
     private static final String EMPTY = "";
     private static final String ADD_TASK_LIST_PATH = "/" + BOARD_ID_VARIABLE;
     private static final String CHANGE_TASK_LIST_POSITIONS_PATH = "/" + TASK_LIST_ID_VARIABLE + "/changePositions";
-    private static final String CHANGE_TASK_LIST_NAME = "/" + TASK_LIST_ID_VARIABLE + "/" + TASK_LIST_ID_VARIABLE + "rename";
+    private static final String CHANGE_TASK_LIST_NAME = "/" + TASK_LIST_ID_VARIABLE + "/" + "rename";
     private static final String GET_TASK_LIST = "/get/" + TASK_LIST_ID_VARIABLE;
+    private static final String GET_TASK_LISTS_BY_BOARD = "/getByBoard/" + BOARD_ID_VARIABLE;
 
 
     private final TaskListService taskListService;
@@ -99,6 +101,18 @@ public class TaskListController {
     public ResponseEntity getTaskList(@PathVariable(TASK_LIST_ID) Long taskListId, Principal principal) {
         return taskListService.getTaskList(GetTaskListDTO.builder()
                 .taskListId(taskListId)
+                .username(principal.getName())
+                .build());
+    }
+
+    @GetMapping(
+            value = GET_TASK_LISTS_BY_BOARD,
+            consumes = APPLICATION_JSON_UTF8_VALUE,
+            produces = APPLICATION_JSON_UTF8_VALUE
+    )
+    public ResponseEntity getTaskListsByBoard(@PathVariable(BOARD_ID) Long boardId, Principal principal) {
+        return taskListService.getTaskListByBoard(GetTaskListByBoardDTO.builder()
+                .boardId(boardId)
                 .username(principal.getName())
                 .build());
     }

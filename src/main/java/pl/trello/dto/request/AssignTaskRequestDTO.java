@@ -8,7 +8,7 @@ import lombok.Getter;
 public class AssignTaskRequestDTO {
     private Long taskId;
 
-    private String assignedUsername;
+    private Long assignedUserId;
 
     private String principalUsername;
 

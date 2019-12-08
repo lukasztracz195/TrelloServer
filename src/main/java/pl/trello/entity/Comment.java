@@ -8,13 +8,17 @@ import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -36,6 +40,9 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name = "memberId", referencedColumnName = "memberId")
     private Member owner;
+
+    @OneToMany
+    private List<Attachment> attachments = new ArrayList<>();
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

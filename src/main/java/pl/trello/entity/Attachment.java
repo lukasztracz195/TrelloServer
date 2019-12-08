@@ -12,36 +12,27 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.util.ArrayList;
 import java.util.List;
 
-@NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@NoArgsConstructor
 @Getter
 @Setter
+@Builder
 @Entity
-@Table(name = "tasklists")
-public class TaskList {
+@Table(name = "attachments")
+public class Attachment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "taskListId")
-    private Long taskListId;
-
-    @ManyToOne
-    @JoinColumn(name = "boardId")
-    private Board board;
-
-    @OneToMany(mappedBy = "taskId", fetch = FetchType.EAGER)
-    private List<Task> tasks = new ArrayList<>();
+    private Long attachmentId;
 
     @Column(nullable = false)
     private String name;
 
     @Column(nullable = false)
-    private Integer position;
+    private String content;
 }

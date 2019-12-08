@@ -6,5 +6,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class AssignTaskRequest {
-    private String username;
+    private Long taskId;
+    private Long userId;
 }
