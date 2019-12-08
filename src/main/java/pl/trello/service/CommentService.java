@@ -61,6 +61,9 @@ public class CommentService {
     }
 
     public ResponseEntity editComment(EditCommentDto editCommentDto) {
+        if(editCommentDto.getCommentId() == null){
+            return ResponseAdapter.badRequest();
+        }
         Optional<Member> optionalMember = userRepository.findByUsername(editCommentDto.getUsername());
         if (optionalMember.isPresent()) {
             Optional<Comment> optionalComment = commentRepository.findById(editCommentDto.getCommentId());
@@ -68,6 +71,7 @@ public class CommentService {
                 Comment comment = optionalComment.get();
                 comment.setContent(editCommentDto.getContent());
                 commentRepository.save(comment);
+                return ResponseAdapter.ok();
             }
             return ResponseAdapter.notFound("Not exist Comment with id: " + editCommentDto.getCommentId());
         }

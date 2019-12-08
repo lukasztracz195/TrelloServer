@@ -20,6 +20,7 @@ import pl.trello.request.AddTaskRequest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -87,7 +88,7 @@ public class TaskService {
             Task task = optionalTask.get();
             TaskList taskList = task.getTaskList();
             Board board = taskList.getBoard();
-            Optional<Member> optionalMember = userRepository.findByUsername(assignTaskRequestDTO.getAssignedUsername());
+            Optional<Member> optionalMember = userRepository.findById(assignTaskRequestDTO.getAssignedUserId());
             if (optionalMember.isPresent()) {
                 Member member = optionalMember.get();
                 if (isOwner(board, member) || isMemberOfBoard(board, member)) {
@@ -97,7 +98,7 @@ public class TaskService {
                 }
                 return ResponseAdapter.forbidden("User has not privileges to this board");
             }
-            return ResponseAdapter.notFound("User with username: " + assignTaskRequestDTO.getAssignedUsername() + " not exist");
+            return ResponseAdapter.notFound("User with id: " + assignTaskRequestDTO.getAssignedUserId() + " not exist");
         }
         return ResponseAdapter.notFound("Task with id: " + assignTaskRequestDTO.getTaskId() + " not exist");
     }
@@ -130,11 +131,16 @@ public class TaskService {
                     .attachmentId(attachment.getAttachmentId())
                     .name(attachment.getName())
                     .build()));
+            Long contractorId = -1L;
+            if(task.getContractor() != null){
+                contractorId =  task.getContractor().getMemberId();
+            }
+
             return ResponseAdapter.ok(TaskDto.builder()
                     .taskId(task.getTaskId())
                     .description(task.getDescription())
                     .reporterId(task.getReporter().getMemberId())
-                    .contractorId(task.getContractor().getMemberId())
+                    .contractorId(contractorId)
                     .taskListId(task.getTaskList().getTaskListId())
                     .comments(task.getComments().stream().map(Comment::getCommentId).collect(Collectors.toList()))
                     .attachments(attachments)

@@ -1,5 +1,6 @@
 package pl.trello.controller;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,8 +30,8 @@ public class CommentController {
     private static final String TASK_ID = "taskId";
     private static final String TASK_ID_VARIABLE = "{" + TASK_ID + "}";
 
-    private static final String ADD_PATH = TASK_ID_VARIABLE;
-    private static final String EDIT_PATH = "/edit/" + COMMENT_ID_VARIABLE;
+    private static final String ADD_PATH = "/add";
+    private static final String EDIT_PATH = "/edit";
     private static final String DELETE_PATH = "/delete";
     private static final String GET_PATH = "/get/" + COMMENT_ID_VARIABLE;
 
@@ -46,10 +47,10 @@ public class CommentController {
             consumes = APPLICATION_JSON_UTF8_VALUE,
             produces = APPLICATION_JSON_UTF8_VALUE
     )
-    public ResponseEntity addBoard(@PathVariable(TASK_ID) Long taskId, @RequestBody AddCommentRequest addCommentRequest,
+    public ResponseEntity add(@RequestBody AddCommentRequest addCommentRequest,
                                    Principal principal) {
         return commentService.addComment(AddCommentRequestDTO.builder()
-                .taskId(taskId)
+                .taskId(addCommentRequest.getTaskId())
                 .username(principal.getName())
                 .content(addCommentRequest.getContent())
                 .build());
@@ -60,11 +61,10 @@ public class CommentController {
             consumes = APPLICATION_JSON_UTF8_VALUE,
             produces = APPLICATION_JSON_UTF8_VALUE
     )
-    public ResponseEntity editComment(@PathVariable(COMMENT_ID) Long commentId,
-                                      @RequestBody EditCommentRequestDto editCommentRequestDto,
+    public ResponseEntity editComment(@RequestBody EditCommentRequestDto editCommentRequestDto,
                                       Principal principal) {
         return commentService.editComment(EditCommentDto.builder()
-                .commentId(commentId)
+                .commentId(editCommentRequestDto.getCommentId())
                 .content(editCommentRequestDto.getContent())
                 .username(principal.getName())
                 .build());
