@@ -35,6 +35,7 @@ public class TaskController {
     private static final String EDIT_TASK_PATH = "/edit/" + TASK_ID_VARIABLE;
     private static final String ASSIGN_TASK = "/assign/" + TASK_ID_VARIABLE;
     private static final String MOVE_TASK = "/move/";
+    private static final String GET_TASK = "/get/"+TASK_ID_VARIABLE;
 
     private final TaskService taskService;
 
@@ -93,5 +94,14 @@ public class TaskController {
                 .taskListId(moveTaskRequest.getTaskListId())
                 .username(principal.getName())
                 .build());
+    }
+
+    @GetMapping(
+            value = GET_TASK,
+            consumes = APPLICATION_JSON_UTF8_VALUE,
+            produces = APPLICATION_JSON_UTF8_VALUE
+    )
+    public ResponseEntity getTask(@PathVariable(TASK_ID) Long taskId){
+        return taskService.getTask(taskId);
     }
 }

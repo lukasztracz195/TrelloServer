@@ -1,15 +1,15 @@
 package pl.trello.controller;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import pl.trello.dto.request.AddBoardRequestDTO;
 import pl.trello.dto.request.AddCommentRequestDTO;
-import pl.trello.request.AddBoardRequest;
+import pl.trello.dto.request.EditCommentDto;
+import pl.trello.dto.request.EditCommentRequestDto;
 import pl.trello.request.AddCommentRequest;
 import pl.trello.service.CommentService;
 
@@ -32,7 +32,7 @@ public class CommentController {
     private static final String ADD_PATH = TASK_ID_VARIABLE;
     private static final String EDIT_PATH = "/edit/" + COMMENT_ID_VARIABLE;
     private static final String DELETE_PATH = "/delete";
-
+    private static final String GET_PATH = "/get/" + COMMENT_ID_VARIABLE;
 
 
     private final CommentService commentService;
@@ -49,16 +49,33 @@ public class CommentController {
     public ResponseEntity addBoard(@PathVariable(TASK_ID) Long taskId, @RequestBody AddCommentRequest addCommentRequest,
                                    Principal principal) {
         return commentService.addComment(AddCommentRequestDTO.builder()
-        .taskId(taskId)
-        .username(principal.getName())
-        .content(addCommentRequest.getContent())
-        .build());
+                .taskId(taskId)
+                .username(principal.getName())
+                .content(addCommentRequest.getContent())
+                .build());
     }
 
-//    @PostMapping(
-//            value = EDIT_PATH,
-//            consumes = APPLICATION_JSON_UTF8_VALUE,
-//            produces = APPLICATION_JSON_UTF8_VALUE
-//    )
-//    public ResponseEntity editBoard(@PathVariable(COMMENT_ID), Long commentId, @RequestBody)
+    @PostMapping(
+            value = EDIT_PATH,
+            consumes = APPLICATION_JSON_UTF8_VALUE,
+            produces = APPLICATION_JSON_UTF8_VALUE
+    )
+    public ResponseEntity editComment(@PathVariable(COMMENT_ID) Long commentId,
+                                      @RequestBody EditCommentRequestDto editCommentRequestDto,
+                                      Principal principal) {
+        return commentService.editComment(EditCommentDto.builder()
+                .commentId(commentId)
+                .content(editCommentRequestDto.getContent())
+                .username(principal.getName())
+                .build());
+    }
+
+    @GetMapping(
+            value = GET_PATH,
+            consumes = APPLICATION_JSON_UTF8_VALUE,
+            produces = APPLICATION_JSON_UTF8_VALUE
+    )
+    public ResponseEntity getCommit(@PathVariable(COMMENT_ID) Long commitId, Principal principal) {
+        return commentService.getCommit(commitId, principal);
+    }
 }

@@ -6,7 +6,10 @@ import pl.trello.ResponseAdapter;
 import pl.trello.dto.request.AssignTaskRequestDTO;
 import pl.trello.dto.request.EditTaskRequestDTO;
 import pl.trello.dto.request.MoveTaskRequestDTO;
+import pl.trello.dto.response.valid.AttachmentDto;
+import pl.trello.dto.response.valid.TaskDto;
 import pl.trello.entity.Board;
+import pl.trello.entity.Comment;
 import pl.trello.entity.Member;
 import pl.trello.entity.Task;
 import pl.trello.entity.TaskList;
@@ -16,7 +19,9 @@ import pl.trello.repository.UserRepository;
 import pl.trello.request.AddTaskRequest;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
@@ -114,6 +119,30 @@ public class TaskService {
         return ResponseAdapter.notFound("Task with id: " + moveTaskRequestDTO.getTaskId() + " not exist");
     }
 
+
+    public ResponseEntity getTask(Long taskId) {
+        Optional<Task> optionalTask = taskRepository.findById(taskId);
+        if (optionalTask.isPresent()) {
+            Task task = optionalTask.get();
+
+            List<AttachmentDto> attachments = new ArrayList<>();
+            task.getAttachments().forEach(attachment -> attachments.add(AttachmentDto.builder()
+                    .attachmentId(attachment.getAttachmentId())
+                    .name(attachment.getName())
+                    .build()));
+            return ResponseAdapter.ok(TaskDto.builder()
+                    .taskId(task.getTaskId())
+                    .description(task.getDescription())
+                    .reporterId(task.getReporter().getMemberId())
+                    .contractorId(task.getContractor().getMemberId())
+                    .taskListId(task.getTaskList().getTaskListId())
+                    .comments(task.getComments().stream().map(Comment::getCommentId).collect(Collectors.toList()))
+                    .attachments(attachments)
+                    .build());
+        }
+        return ResponseAdapter.notFound("Task not exist");
+    }
+
     public static boolean isOwner(Board board, Member member) {
         return board.getOwner().equals(member);
     }
@@ -122,4 +151,6 @@ public class TaskService {
         return board.getMembers().stream()
                 .anyMatch(m -> m.getUsername().equals(member.getUsername()));
     }
+
+
 }

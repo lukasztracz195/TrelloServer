@@ -127,7 +127,7 @@ public class BoardService {
         return ResponseEntity.of(InvalidResponse.of("User with username: " + getBoardRequestDTO.getUsername() + " not exist"));
     }
 
-    private List<Board> findAllConnectedByMemberId(long memberId) {
+    public List<Board> findAllConnectedByMemberId(long memberId) {
         Member member = userRepository.getOne(memberId);
         List<Board> boardsWhichMemberIsOwner = boardRepository.findListByOwner(member.getMemberId());
         List<Board> boardsWhichMemberIsMember = new ArrayList<>();
@@ -144,7 +144,7 @@ public class BoardService {
         return boardsWhichMemberIsMember;
     }
 
-    private List<AddTaskListResponseDTO> prepareTaskListResponse(Board board) {
+    public List<AddTaskListResponseDTO> prepareTaskListResponse(Board board) {
         List<AddTaskListResponseDTO> taskLists = new ArrayList<>();
         for (TaskList taskList : board.getTaskLists()) {
             taskLists.add(AddTaskListResponseDTO.builder()
