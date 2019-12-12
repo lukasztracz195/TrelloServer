@@ -9,5 +9,6 @@ public class ChangeTaskListNameDTO {
 
     private Long taskListId;
     private String name;
+    private String username;
 
 }

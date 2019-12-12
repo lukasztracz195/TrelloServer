@@ -23,9 +23,7 @@ import pl.trello.request.ChangeColumnsPositionsRequest;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.LongSummaryStatistics;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,11 +35,14 @@ public class TaskListService {
 
     private final UserRepository userRepository;
 
+    private final BoardService boardService;
+
     public TaskListService(BoardRepository boardRepository,
-                           TaskListRepository taskListRepository, UserRepository userRepository) {
+                           TaskListRepository taskListRepository, UserRepository userRepository, BoardService boardService) {
         this.boardRepository = boardRepository;
         this.taskListRepository = taskListRepository;
         this.userRepository = userRepository;
+        this.boardService = boardService;
     }
 
     public ResponseEntity addTaskList(AddTaskListRequest addTaskListRequest) {
@@ -76,37 +77,22 @@ public class TaskListService {
     public ResponseEntity changeColumnsPositions(ChangeColumnsPositionsRequest changeColumnsPositionsRequest) {
         Optional<Board> optionalBoard = boardRepository.findById(changeColumnsPositionsRequest.getBoardId());
         if (optionalBoard.isPresent()) {
-            Board board = optionalBoard.get();
-            Set<Long> setTaskListIds = board.getTaskLists().stream()
-                    .map(TaskList::getTaskListId)
-                    .collect(Collectors.toSet());
-            List<Long> ids = changeColumnsPositionsRequest.getTaskListIdPositions().stream()
-                    .map(ChangeColumnsPositionsRequest.TaskListIdPosition::getTaskListId)
-                    .collect(Collectors.toList());
-
-            LongSummaryStatistics idsStatictics = ids.stream().mapToLong(aLong -> aLong).summaryStatistics();
-            LongSummaryStatistics longSummaryStatistics = setTaskListIds.stream().mapToLong(aLong -> aLong).summaryStatistics();
-            if (idsStatictics.getMin() == longSummaryStatistics.getMax() && idsStatictics.getMin() == longSummaryStatistics.getMin()) {
-
-                List<TaskList> savedTaskLists = new LinkedList<>();
-                changeColumnsPositionsRequest.getTaskListIdPositions()
-                        .forEach(taskListIdPosition -> {
-                            TaskList taskList = taskListRepository.findById(taskListIdPosition.getTaskListId()).get();
-                            taskList.setPosition(taskListIdPosition.getPosition());
-                            savedTaskLists.add(taskListRepository.save(taskList));
-                        });
-
-                return ResponseEntity.ok(savedTaskLists.stream()
-                        .map(taskList -> ChangeColumnsPositionsResponseDto.builder()
-                                .taskListId(taskList.getTaskListId())
-                                .boardId(taskList.getBoard().getBoardId())
-                                .tasks(taskList.getTasks())
-                                .position(taskList.getPosition())
-                                .name(taskList.getName())
-                                .build())
-                        .collect(Collectors.toList()));
-            }
-            return ResponseAdapter.badRequest("Requst not contain information about position all taskLists in board");
+            List<TaskList> savedTaskLists = new LinkedList<>();
+            changeColumnsPositionsRequest.getTaskListIdPositions()
+                    .forEach(taskListIdPosition -> {
+                        TaskList taskList = taskListRepository.findById(taskListIdPosition.getTaskListId()).get();
+                        taskList.setPosition(taskListIdPosition.getPosition());
+                        savedTaskLists.add(taskListRepository.save(taskList));
+                    });
+            return ResponseEntity.ok(savedTaskLists.stream()
+                    .map(taskList -> ChangeColumnsPositionsResponseDto.builder()
+                            .taskListId(taskList.getTaskListId())
+                            .boardId(taskList.getBoard().getBoardId())
+                            .tasks(taskList.getTasks())
+                            .position(taskList.getPosition())
+                            .name(taskList.getName())
+                            .build())
+                    .collect(Collectors.toList()));
         }
         return ResponseAdapter.notFound("Board with id:" + changeColumnsPositionsRequest.getBoardId() + " not exist");
     }
@@ -114,13 +100,22 @@ public class TaskListService {
     public ResponseEntity changeColumnName(ChangeTaskListNameDTO changeTaskListNameDTO) {
         Optional<TaskList> optionalTaskList = taskListRepository.findById(changeTaskListNameDTO.getTaskListId());
         if (optionalTaskList.isPresent()) {
-            TaskList taskList = optionalTaskList.get();
-            if (!taskList.getName().equals(changeTaskListNameDTO.getName())) {
-                taskList.setName(changeTaskListNameDTO.getName());
-                taskListRepository.save(taskList);
-                return ResponseAdapter.ok();
+            Optional<Member> optionalMember = userRepository.findByUsername(changeTaskListNameDTO.getUsername());
+            if (optionalMember.isPresent()) {
+                Member member = optionalMember.get();
+                List<Board> boards = boardService.findAllConnectedByMemberId(member.getMemberId());
+                if (boards.contains(optionalTaskList.get().getBoard())) {
+                    TaskList taskList = optionalTaskList.get();
+                    if (!taskList.getName().equals(changeTaskListNameDTO.getName())) {
+                        taskList.setName(changeTaskListNameDTO.getName());
+                        taskListRepository.save(taskList);
+                        return ResponseAdapter.ok();
+                    }
+                    return ResponseAdapter.forbidden("New and old name is the same");
+                }
+                return ResponseAdapter.forbidden("User have not privileges to this board");
             }
-            return ResponseAdapter.forbidden("New and old name is the same");
+            return ResponseAdapter.forbidden("User about name" + changeTaskListNameDTO.getUsername() + "not exist");
         }
         return ResponseAdapter.notFound("TaskList about id: " + changeTaskListNameDTO.getTaskListId() + " not exist");
     }
@@ -171,13 +166,14 @@ public class TaskListService {
 
     private List<GetTaskListResponse> prepareTaskLists(List<TaskList> taskList) {
         List<GetTaskListResponse> list = new ArrayList<>();
-        for(TaskList item : taskList){
+        for (TaskList item : taskList) {
+            TaskList innerTaskList = taskListRepository.findById(item.getTaskListId()).get();
             list.add(GetTaskListResponse.builder()
-                    .boardId(item.getBoard().getBoardId())
-                    .name(item.getName())
-                    .tasks(item.getTasks().stream().map(f -> f.getTaskId()).collect(Collectors.toList()))
-                    .position(item.getPosition())
-                    .taskListId(item.getTaskListId())
+                    .boardId(innerTaskList.getBoard().getBoardId())
+                    .name(innerTaskList.getName())
+                    .tasks(innerTaskList.getTasks().stream().map(Task::getTaskId).collect(Collectors.toList()))
+                    .position(innerTaskList.getPosition())
+                    .taskListId(innerTaskList.getTaskListId())
                     .build());
         }
         return list;

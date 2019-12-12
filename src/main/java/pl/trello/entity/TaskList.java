@@ -36,7 +36,7 @@ public class TaskList {
     @JoinColumn(name = "boardId")
     private Board board;
 
-    @OneToMany(mappedBy = "taskId", fetch = FetchType.EAGER)
+    @OneToMany
     private List<Task> tasks = new ArrayList<>();
 
     @Column(nullable = false)

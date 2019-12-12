@@ -13,15 +13,17 @@ import pl.trello.entity.Comment;
 import pl.trello.entity.Member;
 import pl.trello.entity.Task;
 import pl.trello.entity.TaskList;
+import pl.trello.repository.BoardRepository;
 import pl.trello.repository.TaskListRepository;
 import pl.trello.repository.TaskRepository;
 import pl.trello.repository.UserRepository;
 import pl.trello.request.AddTaskRequest;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,11 +31,13 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final TaskListRepository taskListRepository;
+    private final BoardRepository boardRepository;
     private final UserRepository userRepository;
 
-    public TaskService(TaskRepository taskRepository, TaskListRepository taskListRepository, UserRepository userRepository) {
+    public TaskService(TaskRepository taskRepository, TaskListRepository taskListRepository, BoardRepository boardRepository, UserRepository userRepository) {
         this.taskRepository = taskRepository;
         this.taskListRepository = taskListRepository;
+        this.boardRepository = boardRepository;
         this.userRepository = userRepository;
     }
 
@@ -42,16 +46,32 @@ public class TaskService {
         if (optionalMember.isPresent()) {
             Optional<TaskList> optionalTaskList = taskListRepository.findById(addTaskRequest.getTaskListId());
             if (optionalTaskList.isPresent()) {
-                Board board = optionalTaskList.get().getBoard();
+                TaskList taskList = optionalTaskList.get();
+                Board board = taskList.getBoard();
                 if (isOwner(board, optionalMember.get()) || isMemberOfBoard(board, optionalMember.get())) {
                     Task task = Task.builder()
-                            .taskList(optionalTaskList.get())
+                            .taskList(taskList)
                             .comments(new ArrayList<>())
                             .description(addTaskRequest.getDescription())
                             .reporter(optionalMember.get())
                             .build();
-                    taskRepository.save(task);
-                    return ResponseAdapter.ok();
+                    task = taskRepository.save(task);
+                    taskList.getTasks().add(task);
+                    taskListRepository.save(taskList);
+                    List<AttachmentDto> attachmentDtoList = new ArrayList<>();
+                    long contractorId = -1;
+                    if(task.getContractor() != null){
+                        contractorId = task.getContractor().getMemberId();
+                    }
+                    return ResponseAdapter.ok(TaskDto.builder()
+                    .attachments(attachmentDtoList)
+                    .comments(task.getComments().stream().map(Comment::getCommentId).collect(Collectors.toList()))
+                    .contractorId(contractorId)
+                    .description(task.getDescription())
+                    .reporterId(task.getReporter().getMemberId())
+                    .taskId(task.getTaskId())
+                    .taskListId(task.getTaskList().getTaskListId())
+                    .build());
                 }
                 return ResponseAdapter.forbidden("User has not privileges to this board");
             }

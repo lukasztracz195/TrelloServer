@@ -31,7 +31,7 @@ public class BoardController {
     private static final String ADD_PATH = EMPTY;
     private static final String CHANGE_BOARD_NAME_PATH = "/changeName/" + BOARD_ID_VARIABLE;
     private static final String GET_BOARDS = "/getBoards";
-    private static final String GET_BOARD = "/getBoard";
+    private static final String GET_BOARD = "/getBoard/" + BOARD_ID_VARIABLE;
 
     private final BoardService boardService;
 
@@ -81,8 +81,8 @@ public class BoardController {
             consumes = APPLICATION_JSON_UTF8_VALUE,
             produces = APPLICATION_JSON_UTF8_VALUE
     )
-    public ResponseEntity getBoard(@PathVariable(BOARD_ID) Long boardId,
-                                   @RequestBody GetBoardRequestDTO getBoardRequestDTO) {
-        return boardService.getBoard(getBoardRequestDTO, boardId);
+    public ResponseEntity getBoard(@PathVariable(BOARD_ID) Long boardId, Principal principal)
+                                   {
+        return boardService.getBoard(GetBoardRequestDTO.builder().username(principal.getName()).build(), boardId);
     }
 }

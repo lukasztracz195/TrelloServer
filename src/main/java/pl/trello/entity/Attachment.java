@@ -33,6 +33,6 @@ public class Attachment {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20000)
     private String content;
 }

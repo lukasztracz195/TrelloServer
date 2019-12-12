@@ -39,7 +39,7 @@ public class Task {
     private String description;
 
     @OneToMany
-    private List<Comment> comments;
+    private List<Comment> comments= new ArrayList<>();
 
     @OneToMany
     private List<Attachment> attachments = new ArrayList<>();

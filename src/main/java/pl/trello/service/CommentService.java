@@ -11,7 +11,10 @@ import pl.trello.entity.Board;
 import pl.trello.entity.Comment;
 import pl.trello.entity.Member;
 import pl.trello.entity.Task;
+import pl.trello.entity.TaskList;
+import pl.trello.repository.BoardRepository;
 import pl.trello.repository.CommentRepository;
+import pl.trello.repository.TaskListRepository;
 import pl.trello.repository.TaskRepository;
 import pl.trello.repository.UserRepository;
 
@@ -27,11 +30,15 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
+    private final TaskListRepository taskListRepository;
+    private final BoardRepository boardRepository;
 
-    public CommentService(CommentRepository commentRepository, UserRepository userRepository, TaskRepository taskRepository) {
+    public CommentService(CommentRepository commentRepository, UserRepository userRepository, TaskRepository taskRepository, TaskListRepository taskListRepository, BoardRepository boardRepository) {
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
         this.taskRepository = taskRepository;
+        this.taskListRepository = taskListRepository;
+        this.boardRepository = boardRepository;
     }
 
 
@@ -50,8 +57,33 @@ public class CommentService {
                             .owner(member)
                             .task(task)
                             .build();
+                    comment = commentRepository.save(comment);
+                    task.getComments().add(comment);
+                    task = taskRepository.save(task);
+
                     commentRepository.save(comment);
-                    return ResponseAdapter.ok();
+                    taskRepository.save(task);
+                    boardRepository.save(board);
+
+                    List<AttachmentDto> attachmentDtoList = new ArrayList<>();
+                    comment.getAttachments().stream().forEach(attachment -> {
+                        attachmentDtoList.add(AttachmentDto.builder()
+                        .attachmentId(attachment.getAttachmentId())
+                        .name(attachment.getName())
+                        .build());
+                    });
+                    long ownerId = -1;
+                    if(comment.getOwner() != null){
+                        ownerId = comment.getOwner().getMemberId();
+                    }
+                    return ResponseAdapter.ok(CommentDto.builder()
+                    .attachments(attachmentDtoList)
+                    .taskId(comment.getTask().getTaskId())
+                    .ownerId(ownerId)
+                    .createdAt(comment.getCreatedAt())
+                    .content(comment.getContent())
+                    .commentId(comment.getCommentId())
+                    .build());
                 }
                 return ResponseAdapter.forbidden("User have not privileges to this board");
             }

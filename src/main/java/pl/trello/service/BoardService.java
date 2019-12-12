@@ -2,6 +2,7 @@ package pl.trello.service;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import pl.trello.ResponseAdapter;
 import pl.trello.dto.request.GetBoardRequestDTO;
 import pl.trello.dto.response.invalid.InvalidResponse;
 import pl.trello.dto.response.valid.AddBoardResponseDTO;
@@ -35,22 +36,25 @@ public class BoardService {
         this.userRepository = userRepository;
     }
 
-    public ResponseEntity<AddBoardResponseDTO> addBoard(AddBoardRequest addBoardRequest) {
+    public ResponseEntity addBoard(AddBoardRequest addBoardRequest) {
         //TODO validate
 
-        Member owner = userRepository.findByUsername(addBoardRequest.getLogin()).get();
-        Board board = Board.builder()
-                .owner(owner)
-                .name(addBoardRequest.getBoardName())
-                .build();
+        Optional<Member> optionalMember = userRepository.findByUsername(addBoardRequest.getLogin());
+        if(optionalMember.isPresent()) {
+            Board board = Board.builder()
+                    .owner(optionalMember.get())
+                    .name(addBoardRequest.getBoardName())
+                    .build();
 
-        board = boardRepository.save(board);
+            board = boardRepository.save(board);
 
-        return ResponseEntity.ok(AddBoardResponseDTO.builder()
-                .boardId(board.getBoardId())
-                .ownerId(board.getOwner().getMemberId())
-                .name(board.getName())
-                .build());
+            return ResponseEntity.ok(AddBoardResponseDTO.builder()
+                    .boardId(board.getBoardId())
+                    .ownerId(board.getOwner().getMemberId())
+                    .name(board.getName())
+                    .build());
+        }
+        return ResponseAdapter.notFound("User with username: " + addBoardRequest.getLogin() + " not exist");
     }
 
     public ResponseEntity changeBoardName(ChangeBoardNameRequest changeBoardNameRequest) {
@@ -89,6 +93,7 @@ public class BoardService {
             for (Board board : boards) {
                 boardResponseDTOS.add(BoardResponseDTO.builder()
                         .name(board.getName())
+                        .boardId(board.getBoardId())
                         .owner(board.getOwner().getUsername())
                         .membersNames(board.getMembers().stream()
                                 .map(f -> member.getUsername())

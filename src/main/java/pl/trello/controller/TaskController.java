@@ -34,7 +34,7 @@ public class TaskController {
     private static final String TASK_LIST_ID_VARIABLE = "{" + TASK_LIST_ID + "}";
     private static final String TASK_ID_VARIABLE = "{" + TASK_ID + "}";
 
-    private static final String ADD = "/add";
+    private static final String ADD = "/add/" + TASK_LIST_ID_VARIABLE;
     private static final String EDIT_TASK_PATH = "/edit";
     private static final String ASSIGN_TASK = "/assign";
     private static final String MOVE_TASK = "/move";
@@ -51,12 +51,13 @@ public class TaskController {
             consumes = APPLICATION_JSON_UTF8_VALUE,
             produces = APPLICATION_JSON_UTF8_VALUE
     )
-    public ResponseEntity addTask(@RequestBody AddTaskRequestDTO addTaskRequestDTO,
+    public ResponseEntity addTask(@PathVariable(TASK_LIST_ID) Long taskListId,
+                                  @RequestBody AddTaskRequestDTO addTaskRequestDTO,
                                   Principal principal) {
         return taskService.addTask(AddTaskRequest.builder()
                 .username(principal.getName())
                 .description(addTaskRequestDTO.getDescription())
-                .taskListId(addTaskRequestDTO.getTaskListId())
+                .taskListId(taskListId)
                 .build());
     }
 
