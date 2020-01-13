@@ -56,6 +56,7 @@ public class TaskController {
                                   Principal principal) {
         return taskService.addTask(AddTaskRequest.builder()
                 .username(principal.getName())
+                .dateInMilli(addTaskRequestDTO.getDateInMilli())
                 .description(addTaskRequestDTO.getDescription())
                 .taskListId(taskListId)
                 .build());

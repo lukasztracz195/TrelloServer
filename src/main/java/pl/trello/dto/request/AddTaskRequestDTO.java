@@ -14,4 +14,6 @@ public class AddTaskRequestDTO {
 
     private String description;
 
+    private Long dateInMilli;
+
 }

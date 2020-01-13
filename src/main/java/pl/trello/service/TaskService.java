@@ -19,6 +19,9 @@ import pl.trello.repository.TaskRepository;
 import pl.trello.repository.UserRepository;
 import pl.trello.request.AddTaskRequest;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -49,9 +52,15 @@ public class TaskService {
                 TaskList taskList = optionalTaskList.get();
                 Board board = taskList.getBoard();
                 if (isOwner(board, optionalMember.get()) || isMemberOfBoard(board, optionalMember.get())) {
+                    LocalDateTime date = null;
+                    if(addTaskRequest.getDateInMilli() != null){
+                        date = LocalDateTime.ofInstant(Instant.ofEpochMilli(addTaskRequest.getDateInMilli()),
+                                ZoneId.of("Europe/Warsaw"));
+                    }
                     Task task = Task.builder()
                             .taskList(taskList)
                             .comments(new ArrayList<>())
+                            .date(date)
                             .description(addTaskRequest.getDescription())
                             .reporter(optionalMember.get())
                             .build();
@@ -91,6 +100,12 @@ public class TaskService {
                 Member member = optionalMember.get();
                 if (isOwner(board, member) || isMemberOfBoard(board, member)) {
                     task.setDescription(editTaskRequestDTO.getDescription());
+                    LocalDateTime dateToSave = task.getDate();
+                    if(!editTaskRequestDTO.getDateInMillis().equals(task.getDate())){
+                        dateToSave = LocalDateTime.ofInstant(Instant.ofEpochMilli(editTaskRequestDTO.getDateInMillis()),
+                                ZoneId.of("Europe/Warsaw"));
+                    }
+                    task.setDate(dateToSave);
                     taskRepository.save(task);
                     return ResponseAdapter.ok();
                 }

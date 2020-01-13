@@ -12,4 +12,6 @@ public class AddTaskRequest {
     private String username;
 
     private String description;
+
+    private Long dateInMilli;
 }

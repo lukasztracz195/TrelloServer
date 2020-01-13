@@ -9,5 +9,6 @@ public class EditTaskRequestDTO {
 
     private String username;
     private String description;
+    private Long dateInMillis;
     private Long taskId;
 }
