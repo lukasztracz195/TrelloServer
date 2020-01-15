@@ -25,4 +25,6 @@ public class TaskDto {
     private Long reporterId;
 
     private Long contractorId;
+
+    private String date;
 }

@@ -8,5 +8,5 @@ import lombok.Getter;
 public class EditTaskRequest {
     private Long taskId;
     private String description;
-    private Long dateInMillis;
+    private String date;
 }

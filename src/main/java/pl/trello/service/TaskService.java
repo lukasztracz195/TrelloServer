@@ -1,5 +1,6 @@
 package pl.trello.service;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.trello.ResponseAdapter;
@@ -22,6 +23,7 @@ import pl.trello.request.AddTaskRequest;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +38,7 @@ public class TaskService {
     private final TaskListRepository taskListRepository;
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
+    private final String DELETE_DATE = "DELETE_DATE";
 
     public TaskService(TaskRepository taskRepository, TaskListRepository taskListRepository, BoardRepository boardRepository, UserRepository userRepository) {
         this.taskRepository = taskRepository;
@@ -52,15 +55,9 @@ public class TaskService {
                 TaskList taskList = optionalTaskList.get();
                 Board board = taskList.getBoard();
                 if (isOwner(board, optionalMember.get()) || isMemberOfBoard(board, optionalMember.get())) {
-                    LocalDateTime date = null;
-                    if(addTaskRequest.getDateInMilli() != null){
-                        date = LocalDateTime.ofInstant(Instant.ofEpochMilli(addTaskRequest.getDateInMilli()),
-                                ZoneId.of("Europe/Warsaw"));
-                    }
                     Task task = Task.builder()
                             .taskList(taskList)
                             .comments(new ArrayList<>())
-                            .date(date)
                             .description(addTaskRequest.getDescription())
                             .reporter(optionalMember.get())
                             .build();
@@ -69,18 +66,19 @@ public class TaskService {
                     taskListRepository.save(taskList);
                     List<AttachmentDto> attachmentDtoList = new ArrayList<>();
                     long contractorId = -1;
-                    if(task.getContractor() != null){
+                    if (task.getContractor() != null) {
                         contractorId = task.getContractor().getMemberId();
                     }
                     return ResponseAdapter.ok(TaskDto.builder()
-                    .attachments(attachmentDtoList)
-                    .comments(task.getComments().stream().map(Comment::getCommentId).collect(Collectors.toList()))
-                    .contractorId(contractorId)
-                    .description(task.getDescription())
-                    .reporterId(task.getReporter().getMemberId())
-                    .taskId(task.getTaskId())
-                    .taskListId(task.getTaskList().getTaskListId())
-                    .build());
+                            .attachments(attachmentDtoList)
+                            .date(dateToString(task.getDate()))
+                            .comments(task.getComments().stream().map(Comment::getCommentId).collect(Collectors.toList()))
+                            .contractorId(contractorId)
+                            .description(task.getDescription())
+                            .reporterId(task.getReporter().getMemberId())
+                            .taskId(task.getTaskId())
+                            .taskListId(task.getTaskList().getTaskListId())
+                            .build());
                 }
                 return ResponseAdapter.forbidden("User has not privileges to this board");
             }
@@ -100,14 +98,33 @@ public class TaskService {
                 Member member = optionalMember.get();
                 if (isOwner(board, member) || isMemberOfBoard(board, member)) {
                     task.setDescription(editTaskRequestDTO.getDescription());
-                    LocalDateTime dateToSave = task.getDate();
-                    if(!editTaskRequestDTO.getDateInMillis().equals(task.getDate())){
-                        dateToSave = LocalDateTime.ofInstant(Instant.ofEpochMilli(editTaskRequestDTO.getDateInMillis()),
-                                ZoneId.of("Europe/Warsaw"));
+                    LocalDateTime dateToSave;
+                    if (editTaskRequestDTO.getDate().endsWith(DELETE_DATE)) {
+                        dateToSave = null;
+                    } else {
+                        try {
+                            dateToSave = LocalDateTime.parse(editTaskRequestDTO.getDate());
+                        } catch (DateTimeParseException e) {
+                            dateToSave = task.getDate();
+                        }
                     }
                     task.setDate(dateToSave);
-                    taskRepository.save(task);
-                    return ResponseAdapter.ok();
+                    task = taskRepository.save(task);
+                    List<AttachmentDto> attachmentDtoList = new ArrayList<>();
+                    long contractorId = -1;
+                    if (task.getContractor() != null) {
+                        contractorId = task.getContractor().getMemberId();
+                    }
+                    return ResponseAdapter.ok(TaskDto.builder()
+                            .attachments(attachmentDtoList)
+                            .comments(task.getComments().stream().map(Comment::getCommentId).collect(Collectors.toList()))
+                            .contractorId(contractorId)
+                            .date(dateToString(task.getDate()))
+                            .description(task.getDescription())
+                            .reporterId(task.getReporter().getMemberId())
+                            .taskId(task.getTaskId())
+                            .taskListId(task.getTaskList().getTaskListId())
+                            .build());
                 }
                 return ResponseAdapter.forbidden("User has not privileges to this board");
             }
@@ -167,13 +184,14 @@ public class TaskService {
                     .name(attachment.getName())
                     .build()));
             Long contractorId = -1L;
-            if(task.getContractor() != null){
-                contractorId =  task.getContractor().getMemberId();
+            if (task.getContractor() != null) {
+                contractorId = task.getContractor().getMemberId();
             }
 
             return ResponseAdapter.ok(TaskDto.builder()
                     .taskId(task.getTaskId())
                     .description(task.getDescription())
+                    .date(dateToString(task.getDate()))
                     .reporterId(task.getReporter().getMemberId())
                     .contractorId(contractorId)
                     .taskListId(task.getTaskList().getTaskListId())
@@ -191,6 +209,13 @@ public class TaskService {
     public static boolean isMemberOfBoard(Board board, Member member) {
         return board.getMembers().stream()
                 .anyMatch(m -> m.getUsername().equals(member.getUsername()));
+    }
+
+    private static String dateToString(LocalDateTime date){
+        if(date == null){
+            return StringUtils.EMPTY;
+        }
+        return  date.toString();
     }
 
 
