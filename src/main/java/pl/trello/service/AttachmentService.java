@@ -18,6 +18,7 @@ import pl.trello.repository.TaskListRepository;
 import pl.trello.repository.TaskRepository;
 import pl.trello.repository.UserRepository;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -56,15 +57,20 @@ public class AttachmentService {
                 Set<Member> membersSet = new HashSet<>(board.getMembers());
                 if (membersSet.contains(member) || board.getOwner().equals(member)) {
                     List<Attachment> attachments = task.getAttachments();
+                    if(attachments == null){
+                        attachments = new ArrayList<>();
+                        task.setAttachments(attachments);
+                    }
                     Attachment attachment = attachmentRepository.save(Attachment.builder()
                             .name(addAttachmentDto.getName())
                             .content(addAttachmentDto.getContent())
                             .build());
                     attachments.add(attachment);
-                    task.getAttachments().add(attachment);
+                    task.setAttachments(attachments);
                     taskRepository.save(task);
 
-                    return ResponseAdapter.ok(AttachmentDto.builder().attachmentId(attachment.getAttachmentId())
+                    return ResponseAdapter.ok(AttachmentDto.builder()
+                            .attachmentId(attachment.getAttachmentId())
                             .name(attachment.getName())
                             .build());
                 }
@@ -86,6 +92,9 @@ public class AttachmentService {
                 Set<Member> membersSet = new HashSet<>(board.getMembers());
                 if (membersSet.contains(member) || board.getOwner().equals(member)) {
                     List<Attachment> attachments = comment.getAttachments();
+                    if(attachments == null){
+                        attachments = new ArrayList<>();
+                    }
                     Attachment attachment = attachmentRepository.save(Attachment.builder()
                             .name(addAttachmentDto.getName())
                             .content(addAttachmentDto.getContent())
@@ -93,7 +102,8 @@ public class AttachmentService {
                     attachments.add(attachment);
                     comment.setAttachments(attachments);
                     commentRepository.save(comment);
-                    return ResponseAdapter.ok(AttachmentDto.builder().attachmentId(attachment.getAttachmentId())
+                    return ResponseAdapter.ok(AttachmentDto.builder()
+                            .attachmentId(attachment.getAttachmentId())
                             .name(attachment.getName())
                             .build()
                     );

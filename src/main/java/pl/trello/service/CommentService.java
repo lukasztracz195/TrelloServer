@@ -66,6 +66,9 @@ public class CommentService {
                     boardRepository.save(board);
 
                     List<AttachmentDto> attachmentDtoList = new ArrayList<>();
+                    if(comment.getAttachments() == null){
+                        comment.setAttachments(new ArrayList<>());
+                    }
                     comment.getAttachments().stream().forEach(attachment -> {
                         attachmentDtoList.add(AttachmentDto.builder()
                         .attachmentId(attachment.getAttachmentId())
