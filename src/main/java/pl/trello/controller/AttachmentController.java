@@ -1,6 +1,7 @@
 package pl.trello.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.trello.dto.request.AddAttachmentRequest;
 import pl.trello.dto.request.AddAttachmentDto;
+import pl.trello.dto.request.DeleteAttachmentRequestDTO;
 import pl.trello.service.AttachmentService;
 
 import java.security.Principal;
@@ -30,6 +32,7 @@ public class AttachmentController {
     private static final String ADD_PATH_TO_TASK = "/task/" + TASK_ID_PATH_VARIABLE;
     private static final String ADD_PATH_TO_COMMENT = "/comment/" + COMMENT_ID_PATH_VARIABLE;
     private static final String GET_PATH = "/get/" + ATTACHMENT_ID_PATH_VARIABLE;
+    private static final String DELETE_ATTACHMENT_PATH = "/" + ATTACHMENT_ID_PATH_VARIABLE +"/delete";
 
 
     private final AttachmentService attachmentService;
@@ -77,5 +80,17 @@ public class AttachmentController {
     )
     public ResponseEntity get(@PathVariable(ATTACHMENT_ID) Long attachmentId) {
         return attachmentService.getAttachment(attachmentId);
+    }
+
+    @DeleteMapping(
+            value = DELETE_ATTACHMENT_PATH,
+            consumes = APPLICATION_JSON_UTF8_VALUE,
+            produces = APPLICATION_JSON_UTF8_VALUE
+    )
+    public ResponseEntity delete(@PathVariable(ATTACHMENT_ID) Long attachmentId, Principal principal) {
+        return attachmentService.deleteAttachment(DeleteAttachmentRequestDTO.builder()
+        .attachmentId(attachmentId)
+        .login(principal.getName())
+        .build());
     }
 }

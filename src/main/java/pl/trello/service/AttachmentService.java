@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.trello.adapters.ResponseAdapter;
 import pl.trello.dto.request.AddAttachmentDto;
+import pl.trello.dto.request.DeleteAttachmentRequestDTO;
 import pl.trello.dto.response.valid.AttachmentDto;
 import pl.trello.entity.Attachment;
 import pl.trello.entity.Board;
@@ -57,7 +58,7 @@ public class AttachmentService {
                 Set<Member> membersSet = new HashSet<>(board.getMembers());
                 if (membersSet.contains(member) || board.getOwner().equals(member)) {
                     List<Attachment> attachments = task.getAttachments();
-                    if(attachments == null){
+                    if (attachments == null) {
                         attachments = new ArrayList<>();
                         task.setAttachments(attachments);
                     }
@@ -92,7 +93,7 @@ public class AttachmentService {
                 Set<Member> membersSet = new HashSet<>(board.getMembers());
                 if (membersSet.contains(member) || board.getOwner().equals(member)) {
                     List<Attachment> attachments = comment.getAttachments();
-                    if(attachments == null){
+                    if (attachments == null) {
                         attachments = new ArrayList<>();
                     }
                     Attachment attachment = attachmentRepository.save(Attachment.builder()
@@ -113,6 +114,32 @@ public class AttachmentService {
             return ResponseAdapter.notFound("Comment not exist");
         }
         return ResponseAdapter.notFound("User not exist");
+    }
+
+    public ResponseEntity deleteAttachment(DeleteAttachmentRequestDTO deleteAttachmentRequestDTO) {
+        Optional<Attachment> optionalAttachment = attachmentRepository.findById(deleteAttachmentRequestDTO.getAttachmentId());
+        if (optionalAttachment.isPresent()) {
+            Attachment attachment = optionalAttachment.get();
+            List<Comment> commentsWithAttachments = commentRepository.findCommentsByAttachments();
+            List<Task> tasksWithAttachments = taskRepository.findTasksByAttachments();
+
+            Optional<Comment> optionalComment = commentsWithAttachments.stream().filter(f -> f.getAttachments().contains(attachment)).findFirst();
+            if (optionalComment.isPresent()) {
+                Comment comment = optionalComment.get();
+                comment.getAttachments().remove(attachment);
+                commentRepository.save(comment);
+            } else {
+                Optional<Task> optionalTask = tasksWithAttachments.stream().filter(f -> f.getAttachments().contains(attachment)).findFirst();
+                if (optionalTask.isPresent()) {
+                    Task task = optionalTask.get();
+                    task.getAttachments().remove(attachment);
+                    taskRepository.save(task);
+                }
+            }
+            attachmentRepository.delete(attachment);
+            return ResponseAdapter.ok();
+        }
+        return ResponseAdapter.notFound("Not exist attachment with id: " + deleteAttachmentRequestDTO.getAttachmentId());
     }
 
 
