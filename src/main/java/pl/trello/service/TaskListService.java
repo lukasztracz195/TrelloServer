@@ -7,10 +7,13 @@ import pl.trello.dto.request.ChangeTaskListNameDTO;
 import pl.trello.dto.request.GetTaskListByBoardDTO;
 import pl.trello.dto.request.GetTaskListDTO;
 import pl.trello.dto.response.valid.AddTaskListResponseDTO;
+import pl.trello.dto.response.valid.AttachmentDto;
 import pl.trello.dto.response.valid.ChangeColumnsPositionsResponseDto;
 import pl.trello.dto.response.valid.GetTaskListResponse;
 import pl.trello.dto.response.valid.GetTaskListsResponseDTO;
+import pl.trello.dto.response.valid.TaskDto;
 import pl.trello.entity.Board;
+import pl.trello.entity.Comment;
 import pl.trello.entity.Member;
 import pl.trello.entity.Task;
 import pl.trello.entity.TaskList;
@@ -24,6 +27,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Service
@@ -88,7 +92,25 @@ public class TaskListService {
                     .map(taskList -> ChangeColumnsPositionsResponseDto.builder()
                             .taskListId(taskList.getTaskListId())
                             .boardId(taskList.getBoard().getBoardId())
-                            .tasks(taskList.getTasks())
+                            .tasks(taskList.getTasks().stream().map(taskDto -> {
+                                return TaskDto.builder()
+                                        .taskId(taskDto.getTaskId())
+                                        .date(TaskService.dateToString(taskDto.getDate()))
+                                        .attachments(
+                                                taskDto.getAttachments().stream().map(attachment ->
+                                                        AttachmentDto.builder()
+                                                        .attachmentId(attachment.getAttachmentId())
+                                                        .name(attachment.getName())
+                                                        .build()
+                                                ).collect(Collectors.toList()))
+                                        .comments(taskDto.getComments().stream().map(Comment::getCommentId)
+                                                .collect(Collectors.toList()))
+                                        .contractorId(createEmptyContractor(taskDto.getContractor()))
+                                        .description(taskDto.getDescription())
+                                        .reporterId(taskDto.getReporter().getMemberId())
+                                        .build();
+                            }
+                            ).collect(Collectors.toList()))
                             .position(taskList.getPosition())
                             .name(taskList.getName())
                             .build())
@@ -177,5 +199,12 @@ public class TaskListService {
                     .build());
         }
         return list;
+    }
+
+    private Long createEmptyContractor(Member contractor) {
+        if (contractor != null) {
+            return contractor.getMemberId();
+        }
+        return (long) -1;
     }
 }

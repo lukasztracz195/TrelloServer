@@ -54,4 +54,7 @@ public class Task {
 
     @Column
     private LocalDateTime date;
+
+    @Column(nullable = false)
+    private Integer position;
 }

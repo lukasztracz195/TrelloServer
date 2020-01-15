@@ -2,6 +2,7 @@ package pl.trello.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -9,15 +10,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.trello.dto.request.AddTaskRequestDTO;
 import pl.trello.dto.request.AssignTaskRequestDTO;
+import pl.trello.dto.request.ChangeColumnsPositionsRequestDto;
+import pl.trello.dto.request.ChangeTaskPositionsRequestDto;
+import pl.trello.dto.request.ChangeTasksPositionsRequest;
 import pl.trello.dto.request.EditTaskRequestDTO;
 import pl.trello.dto.request.MoveTaskRequestDTO;
 import pl.trello.request.AddTaskRequest;
 import pl.trello.request.AssignTaskRequest;
+import pl.trello.request.ChangeColumnsPositionsRequest;
 import pl.trello.request.EditTaskRequest;
 import pl.trello.request.MoveTaskRequest;
 import pl.trello.service.TaskService;
 
 import java.security.Principal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
@@ -39,6 +46,7 @@ public class TaskController {
     private static final String ASSIGN_TASK = "/assign";
     private static final String MOVE_TASK = "/move";
     private static final String GET_TASK = "/get/"+TASK_ID_VARIABLE;
+    private static final String CHANGE_TASK_POSITIONS_PATH = "/" + TASK_LIST_ID_VARIABLE + "/changePositions";
 
     private final TaskService taskService;
 
@@ -86,6 +94,24 @@ public class TaskController {
                 .taskId(assignTaskRequest.getTaskId())
                 .assignedUserId(assignTaskRequest.getUserId())
                 .principalUsername(principal.getName())
+                .build());
+    }
+
+    @PatchMapping(
+            value = CHANGE_TASK_POSITIONS_PATH,
+            consumes = APPLICATION_JSON_UTF8_VALUE,
+            produces = APPLICATION_JSON_UTF8_VALUE
+    )
+    public ResponseEntity changeTaskPositions(@PathVariable(TASK_LIST_ID) Long taskListId,
+                                                  @RequestBody List<ChangeTaskPositionsRequestDto> changeColumnsPositionsRequestDtos,
+                                                  Principal principal) {
+        return taskService.changeTasksPositions(ChangeTasksPositionsRequest.builder()
+                .login(principal.getName())
+                .taskListId(taskListId)
+                .tasksIdPositions(changeColumnsPositionsRequestDtos.stream()
+                        .map(dto -> new ChangeTasksPositionsRequest.TaskIdPosition(dto.getTaskId(), dto.getPosition()))
+                        .collect(Collectors.toList()))
+                .login(principal.getName())
                 .build());
     }
 

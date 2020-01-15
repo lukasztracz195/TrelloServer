@@ -27,4 +27,6 @@ public class TaskDto {
     private Long contractorId;
 
     private String date;
+
+    private Integer position;
 }

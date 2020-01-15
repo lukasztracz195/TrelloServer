@@ -5,9 +5,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.trello.ResponseAdapter;
 import pl.trello.dto.request.AssignTaskRequestDTO;
+import pl.trello.dto.request.ChangeTasksPositionsRequest;
 import pl.trello.dto.request.EditTaskRequestDTO;
 import pl.trello.dto.request.MoveTaskRequestDTO;
 import pl.trello.dto.response.valid.AttachmentDto;
+import pl.trello.dto.response.valid.ChangeColumnsPositionsResponseDto;
+import pl.trello.dto.response.valid.ChangeTasksPositionsResponseDTO;
 import pl.trello.dto.response.valid.TaskDto;
 import pl.trello.entity.Board;
 import pl.trello.entity.Comment;
@@ -19,13 +22,16 @@ import pl.trello.repository.TaskListRepository;
 import pl.trello.repository.TaskRepository;
 import pl.trello.repository.UserRepository;
 import pl.trello.request.AddTaskRequest;
+import pl.trello.request.ChangeColumnsPositionsRequest;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -58,22 +64,21 @@ public class TaskService {
                     Task task = Task.builder()
                             .taskList(taskList)
                             .comments(new ArrayList<>())
+                            .position(taskList.getTasks().size() + 1)
                             .description(addTaskRequest.getDescription())
                             .reporter(optionalMember.get())
+                            .position(taskList.getTasks().size())
                             .build();
                     task = taskRepository.save(task);
                     taskList.getTasks().add(task);
                     taskListRepository.save(taskList);
                     List<AttachmentDto> attachmentDtoList = new ArrayList<>();
-                    long contractorId = -1;
-                    if (task.getContractor() != null) {
-                        contractorId = task.getContractor().getMemberId();
-                    }
                     return ResponseAdapter.ok(TaskDto.builder()
                             .attachments(attachmentDtoList)
                             .date(dateToString(task.getDate()))
+                            .position(task.getPosition())
                             .comments(task.getComments().stream().map(Comment::getCommentId).collect(Collectors.toList()))
-                            .contractorId(contractorId)
+                            .contractorId(createEmptyContractor(task.getContractor()))
                             .description(task.getDescription())
                             .reporterId(task.getReporter().getMemberId())
                             .taskId(task.getTaskId())
@@ -111,14 +116,11 @@ public class TaskService {
                     task.setDate(dateToSave);
                     task = taskRepository.save(task);
                     List<AttachmentDto> attachmentDtoList = new ArrayList<>();
-                    long contractorId = -1;
-                    if (task.getContractor() != null) {
-                        contractorId = task.getContractor().getMemberId();
-                    }
                     return ResponseAdapter.ok(TaskDto.builder()
                             .attachments(attachmentDtoList)
                             .comments(task.getComments().stream().map(Comment::getCommentId).collect(Collectors.toList()))
-                            .contractorId(contractorId)
+                            .contractorId(createEmptyContractor(task.getContractor()))
+                            .position(task.getPosition())
                             .date(dateToString(task.getDate()))
                             .description(task.getDescription())
                             .reporterId(task.getReporter().getMemberId())
@@ -132,6 +134,47 @@ public class TaskService {
         }
         return ResponseAdapter.notFound("Task with id: " + editTaskRequestDTO.getTaskId() + " not exist");
 
+    }
+
+    public ResponseEntity changeTasksPositions(ChangeTasksPositionsRequest changeTasksPositionsRequest) {
+        Optional<TaskList> optionalTaskList = taskListRepository.findById(changeTasksPositionsRequest.getTaskListId());
+        if (optionalTaskList.isPresent()) {
+            List<Task> savedTasks = new LinkedList<>();
+            changeTasksPositionsRequest.getTasksIdPositions()
+                    .forEach(taskIdPosition -> {
+                        Task task = taskRepository.findById(taskIdPosition.getTaskId()).get();
+                        task.setPosition(taskIdPosition.getPosition());
+                        savedTasks.add(taskRepository.save(task));
+                    });
+            savedTasks.sort(Comparator.comparingInt(Task::getPosition));
+            List<TaskDto> list = new ArrayList<>();
+            for (Task task : savedTasks) {
+                TaskDto build = TaskDto.builder()
+                        .taskId(task.getTaskId())
+                        .position(task.getPosition())
+                        .reporterId(task.getReporter().getMemberId())
+                        .description(task.getDescription())
+                        .taskListId(optionalTaskList.get().getTaskListId())
+                        .contractorId(createEmptyContractor(task.getContractor()))
+                        .comments(task.getComments().stream().map(
+                                Comment::getCommentId).collect(Collectors.toList()))
+                        .attachments(task.getAttachments().stream().map(attachment ->
+                                AttachmentDto.builder()
+                                        .name(attachment.getName())
+                                        .attachmentId(attachment.getAttachmentId())
+                                        .build()).collect(Collectors.toList()))
+                        .date(dateToString(task.getDate()))
+                        .build();
+                list.add(build);
+            }
+            return ResponseEntity.ok(
+                    ChangeTasksPositionsResponseDTO.builder()
+                            .taskListId(optionalTaskList.get().getTaskListId())
+                            .tasks(list)
+                            .build());
+        }
+        return ResponseAdapter.notFound("TaskList with id:" +
+                changeTasksPositionsRequest.getTaskListId() + " not exist");
     }
 
     public ResponseEntity assignTask(AssignTaskRequestDTO assignTaskRequestDTO) {
@@ -183,17 +226,14 @@ public class TaskService {
                     .attachmentId(attachment.getAttachmentId())
                     .name(attachment.getName())
                     .build()));
-            Long contractorId = -1L;
-            if (task.getContractor() != null) {
-                contractorId = task.getContractor().getMemberId();
-            }
+
 
             return ResponseAdapter.ok(TaskDto.builder()
                     .taskId(task.getTaskId())
                     .description(task.getDescription())
                     .date(dateToString(task.getDate()))
                     .reporterId(task.getReporter().getMemberId())
-                    .contractorId(contractorId)
+                    .contractorId(createEmptyContractor(task.getContractor()))
                     .taskListId(task.getTaskList().getTaskListId())
                     .comments(task.getComments().stream().map(Comment::getCommentId).collect(Collectors.toList()))
                     .attachments(attachments)
@@ -211,12 +251,18 @@ public class TaskService {
                 .anyMatch(m -> m.getUsername().equals(member.getUsername()));
     }
 
-    private static String dateToString(LocalDateTime date){
-        if(date == null){
+    public static String dateToString(LocalDateTime date) {
+        if (date == null) {
             return StringUtils.EMPTY;
         }
-        return  date.toString();
+        return date.toString();
     }
 
+    private Long createEmptyContractor(Member contractor) {
+        if (contractor != null) {
+            return contractor.getMemberId();
+        }
+        return (long) -1;
+    }
 
 }

@@ -15,7 +15,7 @@ public class ChangeColumnsPositionsResponseDto {
     private Long boardId;
 
     //TODO change to avoid requrency
-    private List<Task> tasks;
+    private List<TaskDto> tasks;
 
     private String name;
 
